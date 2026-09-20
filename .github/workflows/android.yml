@@ -1,0 +1,101 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Kodları götür
+        uses: actions/checkout@v4
+
+      - name: Java 17 quraşdır (Android üçün)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Node.js 18 quraşdır
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Cordova Quraşdır və Layihə Yarat
+        run: |
+          npm install -g cordova
+          cordova create satishapp com.satishproqrami.app "Satış Proqramı"
+          cd satishapp
+          cordova platform add android@12.0.0
+
+      - name: İkon və Veb səhifə Tənzimləmələri
+        run: |
+          cd satishapp
+          
+          # Əgər repozitoriyada icon.png varsa, onu tətbiqin logosu et
+          if [ -f "../icon.png" ]; then
+            cp ../icon.png www/icon.png
+          fi
+
+          # Sayta yönləndirən index.html faylını yarat
+          cat << 'EOF' > www/index.html
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+              <title>Satış Proqramı</title>
+              <style>
+                  html, body {
+                      margin: 0;
+                      padding: 0;
+                      width: 100%;
+                      height: 100%;
+                      overflow: hidden;
+                      background-color: #ffffff;
+                  }
+                  iframe {
+                      width: 100%;
+                      height: 100%;
+                      border: none;
+                  }
+              </style>
+          </head>
+          <body>
+              <iframe src="https://ais-pre-l453wfmu45bvl6iqnnqkoh-673180996970.europe-west2.run.app"></iframe>
+          </body>
+          </html>
+          EOF
+
+          # Cordova config.xml faylını tam icazələrlə yenilə
+          cat << 'EOF' > config.xml
+          <?xml html>
+          <widget id="com.satishproqrami.app" version="1.0.0" xmlns="http://www.w3.org/cdv/ns/1.0" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+              <name>Satış Proqramı</name>
+              <description>Satış Proqramı Mobil Tətbiqi</description>
+              <author>Admin</author>
+              <content src="index.html" />
+              <access origin="*" />
+              <allow-intent href="*" />
+              <allow-navigation href="*" />
+              <preference name="Orientation" value="default" />
+              <preference name="Fullscreen" value="false" />
+              <preference name="KeepRunning" value="true" />
+              <icon src="www/icon.png" />
+          </widget>
+          EOF
+
+      - name: Android APK Yığ
+        run: |
+          cd satishapp
+          cordova build android --debug
+
+      - name: APK Faylını Yadda Saxla
+        uses: actions/upload-artifact@v4
+        with:
+          name: satish-proqrami-apk
+          path: satishapp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+          #
