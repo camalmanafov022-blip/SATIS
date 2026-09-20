@@ -13,34 +13,37 @@ jobs:
       - name: Kodları götür
         uses: actions/checkout@v4
 
-      - name: Java 17 quraşdır (Android üçün)
+      - name: Java 17 quraşdır
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: Node.js 18 quraşdır
+      - name: Node.js 20 quraşdır
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
-      - name: Cordova Quraşdır və Layihə Yarat
+      - name: Android SDK və Build Tools Sazla
+        uses: android-actions/setup-android@v3
+
+      - name: Cordova və Layihə Hazırlığı
         run: |
           npm install -g cordova
-          cordova create satishapp com.satishproqrami.app "Satış Proqramı"
+          cordova create satishapp com.satishproqrami.app "SatishProqrami"
           cd satishapp
           cordova platform add android@12.0.0
 
-      - name: İkon və Veb səhifə Tənzimləmələri
+      - name: Konfiqurasiya və İkonka Əlavəsi
         run: |
           cd satishapp
-          
-          # Əgər repozitoriyada icon.png varsa, onu tətbiqin logosu et
+
+          # Əgər icon.png varsa, kopyala
           if [ -f "../icon.png" ]; then
             cp ../icon.png www/icon.png
           fi
 
-          # Sayta yönləndirən index.html faylını yarat
+          # HTML səhifəsi yaradılması
           cat << 'EOF' > www/index.html
           <!DOCTYPE html>
           <html>
@@ -70,9 +73,9 @@ jobs:
           </html>
           EOF
 
-          # Cordova config.xml faylını tam icazələrlə yenilə
+          # config.xml düzəlişi
           cat << 'EOF' > config.xml
-          <?xml html>
+          <?xml version="1.0" encoding="UTF-8"?>
           <widget id="com.satishproqrami.app" version="1.0.0" xmlns="http://www.w3.org/cdv/ns/1.0" xmlns:cdv="http://cordova.apache.org/ns/1.0">
               <name>Satış Proqramı</name>
               <description>Satış Proqramı Mobil Tətbiqi</description>
@@ -93,9 +96,8 @@ jobs:
           cd satishapp
           cordova build android --debug
 
-      - name: APK Faylını Yadda Saxla
+      - name: APK Faylını Tap və Yadda Saxla
         uses: actions/upload-artifact@v4
         with:
           name: satish-proqrami-apk
-          path: satishapp/platforms/android/app/build/outputs/apk/debug/app-debug.apk
-          #
+          path: satishapp/platforms/android/app/build/outputs/apk/**/*.apk
