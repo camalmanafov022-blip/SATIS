@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android WebView APK
 
 on:
   push:
@@ -10,61 +10,45 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Kodları götür
+      - name: Repozitoriyanı çək
         uses: actions/checkout@v4
 
-      - name: Java 17 quraşdır
+      - name: Java 17 Quraşdır
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Node.js 20 quraşdır
+      - name: Node.js 20 Quraşdır
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: Android SDK və Build Tools Sazla
-        uses: android-actions/setup-android@v3
-
-      - name: Cordova və Layihə Hazırlığı
+      - name: Capacitor ilə WebView Layihəsi Yarat
         run: |
-          npm install -g cordova
-          cordova create satishapp com.satishproqrami.app "SatishProqrami"
-          cd satishapp
-          cordova platform add android@12.0.0
+          mkdir build-app
+          cd build-app
+          
+          # Capacitor layihəsi başlat
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          
+          # Capacitor konfiqurasiyası
+          npx cap init "Satış Proqramı" "com.satishproqrami.app" --web-dir www
 
-      - name: Konfiqurasiya və İkonka Əlavəsi
-        run: |
-          cd satishapp
-
-          # Əgər icon.png varsa, kopyala
-          if [ -f "../icon.png" ]; then
-            cp ../icon.png www/icon.png
-          fi
-
-          # HTML səhifəsi yaradılması
+          # Web fayllarını hazırlayırıq (WebView iframe)
+          mkdir www
           cat << 'EOF' > www/index.html
           <!DOCTYPE html>
-          <html>
+          <html lang="az">
           <head>
               <meta charset="utf-8">
-              <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
               <title>Satış Proqramı</title>
               <style>
-                  html, body {
-                      margin: 0;
-                      padding: 0;
-                      width: 100%;
-                      height: 100%;
-                      overflow: hidden;
-                      background-color: #ffffff;
-                  }
-                  iframe {
-                      width: 100%;
-                      height: 100%;
-                      border: none;
-                  }
+                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                  html, body { width: 100%; height: 100%; overflow: hidden; background-color: #ffffff; }
+                  iframe { width: 100%; height: 100%; border: none; display: block; }
               </style>
           </head>
           <body>
@@ -73,31 +57,19 @@ jobs:
           </html>
           EOF
 
-          # config.xml düzəlişi
-          cat << 'EOF' > config.xml
-          <?xml version="1.0" encoding="UTF-8"?>
-          <widget id="com.satishproqrami.app" version="1.0.0" xmlns="http://www.w3.org/cdv/ns/1.0" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-              <name>Satış Proqramı</name>
-              <description>Satış Proqramı Mobil Tətbiqi</description>
-              <author>Admin</author>
-              <content src="index.html" />
-              <access origin="*" />
-              <allow-intent href="*" />
-              <allow-navigation href="*" />
-              <preference name="Orientation" value="default" />
-              <preference name="Fullscreen" value="false" />
-              <preference name="KeepRunning" value="true" />
-              <icon src="www/icon.png" />
-          </widget>
-          EOF
+          # Android platformasını əlavə et
+          npx cap add android
+          npx cap copy android
 
-      - name: Android APK Yığ
+      - name: APK Yığ (Gradle)
         run: |
-          cd satishapp
-          cordova build android --debug
+          cd build-app/android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      - name: APK Faylını Tap və Yadda Saxla
+      - name: APK Faylını Saxla
         uses: actions/upload-artifact@v4
         with:
           name: satish-proqrami-apk
-          path: satishapp/platforms/android/app/build/outputs/apk/**/*.apk
+          path: build-app/android/app/build/outputs/apk/debug/app-debug.apk
+          
