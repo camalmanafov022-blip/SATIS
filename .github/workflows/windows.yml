@@ -1,4 +1,4 @@
-name: Build Sales App Windows EXE
+name: Build Satish Proqrami EXE
 
 on:
   push:
@@ -28,10 +28,10 @@ jobs:
           if exist "%GITHUB_WORKSPACE%\icon.ico" copy "%GITHUB_WORKSPACE%\icon.ico" C:\exe-app\icon.ico
 
           :: Quraşdırıcı üçün package.json yarat
-          node -e "const fs = require('fs'); const hasIcon = fs.existsSync('icon.ico'); const pkg = { name: 'satis-proqrami', version: '1.0.0', main: 'main.js', scripts: { build: 'electron-builder --win nsis --ia32 --x64' }, build: { appId: 'com.satisproqrami.app', productName: 'SatisProqrami', win: { target: 'nsis', icon: hasIcon ? 'icon.ico' : undefined }, nsis: { oneClick: false, allowToChangeInstallationDirectory: true, createDesktopShortcut: true, createStartMenuShortcut: true, shortcutName: 'Satış Proqramı', installerIcon: hasIcon ? 'icon.ico' : undefined, uninstallerIcon: hasIcon ? 'icon.ico' : undefined }, files: ['**/*'] } }; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
+          node -e "const fs = require('fs'); const hasIcon = fs.existsSync('icon.ico'); const pkg = { name: 'satish-proqrami', version: '1.0.0', main: 'main.js', scripts: { build: 'electron-builder --win nsis --ia32 --x64' }, build: { appId: 'com.satishproqrami.app', productName: 'SATIŞ PROQRAMI', win: { target: 'nsis', icon: hasIcon ? 'icon.ico' : undefined }, nsis: { oneClick: false, allowToChangeInstallationDirectory: true, createDesktopShortcut: true, createStartMenuShortcut: true, shortcutName: 'Satış Proqramı', installerIcon: hasIcon ? 'icon.ico' : undefined, uninstallerIcon: hasIcon ? 'icon.ico' : undefined }, files: ['**/*'] } }; fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2));"
 
-          :: Satış proqramı URL-i ilə main.js yaradılması
-          node -e "const fs = require('fs'); const code = `const { app, BrowserWindow } = require('electron'); const path = require('path'); function createWindow() { const win = new BrowserWindow({ width: 1440, height: 900, autoHideMenuBar: true, icon: path.join(__dirname, 'icon.ico'), webPreferences: { nodeIntegration: false, contextIsolation: true, userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' } }); win.maximize(); win.webContents.on('did-finish-load', () => { win.webContents.setZoomFactor(0.85); }); win.loadURL('https://ais-pre-l453wfmu45bvl6iqnnqkoh-673180996970.europe-west2.run.app'); } app.whenReady().then(createWindow); app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });`; fs.writeFileSync('main.js', code);"
+          :: Yerli icazələri açılmış main.js yaradılması
+          node -e "const fs = require('fs'); const code = `const { app, BrowserWindow } = require('electron'); const path = require('path'); function createWindow() { const win = new BrowserWindow({ width: 1440, height: 900, autoHideMenuBar: true, title: 'Satış Proqramı', icon: path.join(__dirname, 'icon.ico'), webPreferences: { nodeIntegration: true, contextIsolation: false, webSecurity: false, userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' } }); win.maximize(); win.webContents.on('did-finish-load', () => { win.webContents.setZoomFactor(0.85); }); win.loadURL('https://ais-pre-l453wfmu45bvl6iqnnqkoh-673180996970.europe-west2.run.app'); } app.whenReady().then(createWindow); app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });`; fs.writeFileSync('main.js', code);"
 
           :: Electron quraşdırılması
           call npm install electron@22.3.27 electron-builder@23.6.0 --save-dev
@@ -42,5 +42,6 @@ jobs:
       - name: EXE faylını Yadda Saxla
         uses: actions/upload-artifact@v4
         with:
-          name: satis-proqrami-windows-installer
+          name: satish-proqrami-installer
           path: C:\exe-app\dist\*.exe
+          
