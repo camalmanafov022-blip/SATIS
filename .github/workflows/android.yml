@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Repozitoriyanı çək
+      - name: Kodları çək
         uses: actions/checkout@v4
 
       - name: Java 17 Quraşdır
@@ -29,14 +29,14 @@ jobs:
           mkdir build-app
           cd build-app
           
-          # Capacitor layihəsi başlat
+          # Capacitor paketlərini quraşdırırıq
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
           
-          # Capacitor konfiqurasiyası
+          # Layihə konfiqurasiyası
           npx cap init "Satış Proqramı" "com.satishproqrami.app" --web-dir www
 
-          # Web fayllarını hazırlayırıq (WebView iframe)
+          # Web faylları (WebView index.html)
           mkdir www
           cat << 'EOF' > www/index.html
           <!DOCTYPE html>
@@ -67,9 +67,8 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      - name: APK Faylını Saxla
+      - name: APK Faylını Yadda Saxla
         uses: actions/upload-artifact@v4
         with:
           name: satish-proqrami-apk
           path: build-app/android/app/build/outputs/apk/debug/app-debug.apk
-          
